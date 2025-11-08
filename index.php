@@ -1,4 +1,3 @@
 <?php
-echo "Bienvenido a PHP Simple App<br>";
-echo "Desarrollado por: Adrián Marín";
+echo "<h1>Bienvenido a mi aplicación PHP Simple - Adrián Marín</h1>";
 ?>
