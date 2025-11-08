@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USER = 'adrian0526'          // 👈 Tu usuario real de DockerHub
+        DOCKERHUB_USER = 'adrian0526'          // Tu usuario DockerHub
         IMAGE_NAME = 'php-simple-app'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Adrian25450/php-simple-app.git'
+                git branch: 'main', url: 'https://github.com/Adrian25450/php-simple-app.git'
             }
         }
 
