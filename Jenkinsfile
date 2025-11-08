@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'adrian25450/php-simple-app' // Tu repo en DockerHub
-        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials' // ID de credencial en Jenkins
+        IMAGE_NAME = 'adrian25450/php-simple-app' // tu repo DockerHub
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // credencial en Jenkins
     }
 
     stages {
@@ -13,13 +13,20 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Generate Tag') {
             steps {
                 script {
-                    COMMIT_HASH = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                    TAG = new Date().format("yyyyMMdd-HHmm") + "-${COMMIT_HASH}"
-                    sh "docker build -t ${IMAGE_NAME}:${TAG} ."
+                    COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    DATE_TAG = sh(returnStdout: true, script: 'date +%Y%m%d-%H%M%S').trim()
+                    TAG = "${DATE_TAG}-${COMMIT_ID}"
+                    echo "Tag generado: ${TAG}"
                 }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${IMAGE_NAME}:${TAG} -t ${IMAGE_NAME}:latest .'
             }
         }
 
@@ -29,6 +36,7 @@ pipeline {
                     sh """
                     echo "${DOCKERHUB_CREDENTIALS_PSW}" | docker login -u "${DOCKERHUB_CREDENTIALS_USR}" --password-stdin
                     docker push ${IMAGE_NAME}:${TAG}
+                    docker push ${IMAGE_NAME}:latest
                     docker logout
                     """
                 }
@@ -44,7 +52,10 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline ejecutado correctamente. Tag generado: ${TAG}"
+            echo "✅ Pipeline ejecutado correctamente. Imagen subida con tag: ${TAG}"
+        }
+        failure {
+            echo "❌ Error en la ejecución del pipeline."
         }
     }
 }
